@@ -10,6 +10,7 @@
 
 #import "MTFont.h"
 #import "MTFont+Internal.h"
+#import <objc/message.h>
 
 @interface MTFont ()
 
@@ -69,7 +70,22 @@
 
 + (NSBundle*) fontBundle
 {
-    // Uses bundle for class so that this can be access by the unit tests.
+    // When built via Swift Package Manager, resources are placed in Bundle.module.
+    // Expose it via IosMathResourceBundle to avoid importing Swift into Obj-C directly.
+#if SWIFT_PACKAGE
+    // The fonts are embedded via SwiftPM resources in the Swift target `IosMathSupport`.
+    // The Swift class is exposed to ObjC as `IosMathSupport.IosMathResourceBundle`.
+    Class bundleProvider = NSClassFromString(@"IosMathSupport.IosMathResourceBundle");
+    if (!bundleProvider) {
+        // Fallback for cases where the module name might be stripped
+        bundleProvider = NSClassFromString(@"IosMathResourceBundle");
+    }
+    if (bundleProvider && [bundleProvider respondsToSelector:@selector(resourceBundle)]) {
+        NSBundle *spmBundle = ((NSBundle *(*)(id, SEL))objc_msgSend)(bundleProvider, @selector(resourceBundle));
+        if (spmBundle) { return spmBundle; }
+    }
+#endif
+    // Fallback for legacy CocoaPods and direct Xcode project usage: load the embedded resource bundle.
     return [NSBundle bundleWithURL:[[NSBundle bundleForClass:[self class]] URLForResource:@"mathFonts" withExtension:@"bundle"]];
 }
 

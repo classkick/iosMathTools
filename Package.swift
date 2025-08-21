@@ -1,29 +1,55 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.7
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "iosMath",
+    defaultLocalization: "en",
+    platforms: [
+        .iOS(.v11),
+        .macOS(.v10_13)
+    ],
     products: [
-        // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
             name: "iosMath",
-            targets: ["iosMath"]),
+            targets: ["iosMath", "IosMathSupport"]
+        ),
     ],
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "iosMath",
             dependencies: [],
-            path: "./"),
+            path: "iosMath",
+            exclude: ["IosMathBundle.swift"],
+            publicHeadersPath: "include",
+            cSettings: [
+                .define("SWIFT_PACKAGE"),
+                .headerSearchPath("include"),
+                .headerSearchPath("lib"),
+                .headerSearchPath("render"),
+                .headerSearchPath("render/internal")
+            ],
+            linkerSettings: [
+                .linkedFramework("CoreGraphics"),
+                .linkedFramework("QuartzCore"),
+                .linkedFramework("CoreText"),
+                .linkedFramework("UIKit", .when(platforms: [.iOS, .tvOS])),
+                .linkedFramework("AppKit", .when(platforms: [.macOS]))
+            ]
+        ),
+        .target(
+            name: "IosMathSupport",
+            dependencies: [],
+            path: "spm",
+            resources: [ .process("fonts") ]
+        ),
         .testTarget(
             name: "iosMathTests",
-            dependencies: ["iosMath"]),
+            dependencies: ["iosMath"],
+            path: "iosMathTests"
+        )
     ]
 )
