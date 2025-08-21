@@ -13,4 +13,9 @@
 #import "MTMathListDisplay.h"
 #import "MTMathList.h"
 #import "MTMathListBuilder.h"
-#import "MTEditableMathLabel.h"
+// Additional public headers needed by dependents
+#import "MTMathListIndex.h"
+#import "MTUnicode.h"
+#import "MTFontManager.h"
+#import "MTMathAtomFactory.h"
+// Note: MTEditableMathLabel is provided by MathEditor package and is not exported here to avoid type conflicts.
